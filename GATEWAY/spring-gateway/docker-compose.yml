@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  gateway-server:
+    image: gateway-server:latest   # Replace with your image name if needed
+    container_name: gateway
+    build:
+      context: .
+      dockerfile: Dockerfile      # Assumes your Dockerfile is in the current directory
+    ports:
+      - "8080:8080"
+    networks:
+      - services-network
+
+networks:
+  services-network:
+    external: true
