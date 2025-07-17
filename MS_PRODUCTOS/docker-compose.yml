@@ -57,6 +57,7 @@ services:
 
 networks:
   producto-network:
+    name: "producto-network"
     driver: bridge
   services-network:
     external: true

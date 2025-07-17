@@ -55,4 +55,28 @@ public class ProductoService {
         }
     }
 
+    public Optional<Producto> actualizarStockYPrecio(int id, Float precio, Integer cantidadStockRecibido) {
+        
+        Optional<Producto> producto = this.obtenerPorId(id);
+        if(producto.isPresent()){
+            producto.get().actualizarStock(cantidadStockRecibido);
+            producto.get().setPrecio(precio);
+            Producto modificado = this.modificarProducto(producto.get());
+            return Optional.ofNullable(modificado);
+        }
+        return Optional.empty();
+
+    }
+
+    public Optional<Producto> actualizarDescuento(int id, Float monto) {
+        
+        Optional<Producto> producto = this.obtenerPorId(id);
+        if(producto.isPresent()){
+            producto.get().setDescuentoPromocional(monto);
+            Producto modificado = this.modificarProducto(producto.get());
+            return Optional.ofNullable(modificado);
+        }
+        return Optional.empty();
+    }
+
 }

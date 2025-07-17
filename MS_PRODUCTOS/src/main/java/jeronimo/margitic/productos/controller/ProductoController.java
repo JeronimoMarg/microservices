@@ -3,6 +3,8 @@ package jeronimo.margitic.productos.controller;
 import java.util.Optional;
 
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -10,18 +12,12 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.micrometer.core.ipc.http.HttpSender.Response;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import jeronimo.margitic.productos.model.Producto;
 import jeronimo.margitic.productos.service.ProductoService;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -53,7 +49,7 @@ public class ProductoController {
         return ResponseEntity.ok(prodObtenidos);
     }
 
-    @PostMapping(path = "/{id}", consumes = "application/json")
+    @PostMapping(path = "/crear", consumes = "application/json")
     public ResponseEntity<Producto> crearProducto (@RequestBody Producto productoNuevo) {
         Producto prodCreado = productoService.crearProducto(productoNuevo);
         return ResponseEntity.status(201).body(prodCreado);
@@ -79,6 +75,41 @@ public class ProductoController {
         }else{
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PutMapping(path="/{id}/actualizarStock")
+    public ResponseEntity<Producto> actualizarStockProductos (@PathVariable int id, @RequestBody Map<String, Object> orden ){
+        Optional<Producto> productoModificado = Optional.empty();
+
+        if (orden.get("precio") != null && orden.get("cantidadStockRecibido") != null){
+            Float precio = Float.valueOf(orden.get("precio").toString());
+            Integer cantidadStockRecibido = Integer.valueOf(orden.get("cantidadStockRecibido").toString());
+            productoModificado = productoService.actualizarStockYPrecio(id, precio, cantidadStockRecibido);
+        }
+
+        if(productoModificado.isPresent()){
+            return ResponseEntity.ok(productoModificado.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping(path="/{id}/actualizarDescuento")
+    public ResponseEntity<Producto> actualizarDescuento (@PathVariable int id, @RequestBody Map<String, Object> descuento){
+
+        Optional<Producto> productoModificado = Optional.empty();
+
+        if(descuento.get("descuento") != null){
+            Float monto = Float.valueOf(descuento.get("descuento").toString());
+            productoModificado = productoService.actualizarDescuento(id, monto);
+        }
+
+        if(productoModificado.isPresent()){
+            return ResponseEntity.ok(productoModificado.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+
     }
     
 }

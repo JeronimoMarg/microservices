@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -35,8 +36,13 @@ public class Producto {
     private int stockActual;
     private int stockMinimo;
     private float precio;
-    @OneToOne(mappedBy = "producto")
+    @OneToOne
+    @JoinColumn(name="id_categoria")
     private Categoria categoria;
     private float descuentoPromocional;
+
+    public void actualizarStock(int stock){
+        this.stockActual = this.stockActual + stock;
+    }
 
 }
