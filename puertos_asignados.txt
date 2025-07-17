@@ -1,7 +1,13 @@
 Puertos de localhost asignados a cada servicio / microservicio:
 - Eureka : 8761
 - Gateway : 8080
+
 - phpMyAdmin_clientes : 8081
-- mySQL_clientes : 3306
-- clientes : 0 (random)
+- mySQL_clientes : 3307
+- clientes : 0 (random) - 8082
+
+- postgres_productos : 5432
+- productos: 0 - 8083
+- phpPgMyAdmin : 8084
+
 - ui : 3000
