@@ -75,6 +75,14 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Dependencia de microservicio de clientes para su clase
+		<dependency>
+			<groupId>jeronimo.margitic</groupId>
+			<artifactId>cliente-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		-->
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

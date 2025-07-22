@@ -77,8 +77,8 @@ public class ProductoController {
         }
     }
 
-    @PutMapping(path="/{id}/actualizarStock")
-    public ResponseEntity<Producto> actualizarStockProductos (@PathVariable int id, @RequestBody Map<String, Object> orden ){
+    @PutMapping(path="/{id}/actualizarStockPrecio")
+    public ResponseEntity<Producto> actualizarStockPrecio (@PathVariable int id, @RequestBody Map<String, Object> orden ){
         Optional<Producto> productoModificado = Optional.empty();
 
         if (orden.get("precio") != null && orden.get("cantidadStockRecibido") != null){
@@ -109,6 +109,21 @@ public class ProductoController {
         } else {
             return ResponseEntity.notFound().build();
         }
+
+    }
+
+    @PutMapping(path="/actualizarStock/{id}")
+    public ResponseEntity<Boolean> actualizarStockProductos (@PathVariable int id, @RequestBody Map<String, Object> detalle){
+        
+        Boolean respuesta = false;
+
+        if (detalle.get("id") != null && detalle.get("cantidad") != null){
+            Integer idProducto = Integer.valueOf(detalle.get("id").toString());
+            Integer cantidad = Integer.valueOf(detalle.get("cantidad").toString());
+            respuesta = productoService.actualizarStockProducto(idProducto, cantidad);
+        }
+
+        return ResponseEntity.ok(respuesta);
 
     }
     

@@ -41,8 +41,13 @@ public class Producto {
     private Categoria categoria;
     private float descuentoPromocional;
 
-    public void actualizarStock(int stock){
+    public void actualizarStockRecibido(int stock){
         this.stockActual = this.stockActual + stock;
+    }
+
+    public boolean actualizarStockPedido(int stock){
+        this.stockActual = this.stockActual - stock;
+        return (this.stockActual < 0);
     }
 
 }

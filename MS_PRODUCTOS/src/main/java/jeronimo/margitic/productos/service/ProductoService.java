@@ -59,7 +59,7 @@ public class ProductoService {
         
         Optional<Producto> producto = this.obtenerPorId(id);
         if(producto.isPresent()){
-            producto.get().actualizarStock(cantidadStockRecibido);
+            producto.get().actualizarStockRecibido(cantidadStockRecibido);
             producto.get().setPrecio(precio);
             Producto modificado = this.modificarProducto(producto.get());
             return Optional.ofNullable(modificado);
@@ -77,6 +77,22 @@ public class ProductoService {
             return Optional.ofNullable(modificado);
         }
         return Optional.empty();
+    }
+
+    public Boolean actualizarStockProducto(Integer idProducto, Integer cantidad) {
+        
+        Optional<Producto> producto = this.obtenerPorId(idProducto);
+        if(producto.isPresent()){
+            Boolean esPosible = producto.get().actualizarStockPedido(cantidad);
+            if (esPosible){
+                //Solamente modificamos el producto si se tiene stock
+                this.modificarProducto(producto.get());
+            }else{
+                //Meter alguna logica en el caso de que no haya stock
+            }
+            return esPosible;
+        }
+        return false;
     }
 
 }
