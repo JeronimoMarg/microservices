@@ -46,16 +46,27 @@ public class CategoriaController {
 
     @PostMapping(path = "/crear", consumes = "application/json")
     public ResponseEntity<Categoria> crearCategoria (@RequestBody Categoria categoriaNueva) {
-        Categoria catCreada = categoriaService.crearCategoria(categoriaNueva);
-        return ResponseEntity.status(201).body(catCreada);
+        try{
+            Categoria catCreada = categoriaService.crearCategoria(categoriaNueva);
+            return ResponseEntity.status(201).body(catCreada);
+        }catch(Exception e){
+            System.err.println("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+
     }
 
     @PutMapping(path="/{id}", consumes="application/json")
     public ResponseEntity<Categoria> modificarCategoria (@RequestBody Categoria categoriaAModificar, @PathVariable int id){
         Optional<Categoria> categoriaBuscada = categoriaService.obtenerPorId(id);
         if(categoriaBuscada.isPresent()){
-            Categoria cat = categoriaService.modificarCategoria(categoriaAModificar);
-            return ResponseEntity.ok(cat);
+            try{
+                Categoria cat = categoriaService.modificarCategoria(categoriaAModificar);
+                return ResponseEntity.ok(cat);
+            }catch(Exception e){
+                System.err.println("Error: " + e.getMessage());
+                return ResponseEntity.badRequest().build();
+            }
         }else{
             return ResponseEntity.notFound().build();
         }

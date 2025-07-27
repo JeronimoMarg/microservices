@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import jeronimo.margitic.pedidos.PedidosApplication;
 import jeronimo.margitic.pedidos.dto.ClienteDTO;
 import jeronimo.margitic.pedidos.dto.ObraDTO;
+import jeronimo.margitic.pedidos.dto.OrdenCompraDTO;
 import jeronimo.margitic.pedidos.model.EstadoPedido;
 import jeronimo.margitic.pedidos.model.HistorialEstado;
 import jeronimo.margitic.pedidos.model.OrdenCompra;
@@ -50,11 +51,16 @@ public class OrdenCompraService {
         return ordenCompraRepository.findByNumeroPedido(numero);
     }
 
-    public OrdenCompra crearPedido(ClienteDTO cliente, ObraDTO obra, String observaciones, List<OrdenCompraDetalle> detalles){
+    public OrdenCompra crearPedido(OrdenCompraDTO orden){
+        ClienteDTO cliente = orden.getCliente();
+        ObraDTO obra = orden.getObra();
+        String observaciones = orden.getObservaciones();
+        List<OrdenCompraDetalle> detalles = orden.getDetalles();
         validarDatos(cliente, obra, detalles); 
         OrdenCompra nuevaOrden = new OrdenCompra(cliente, obra, observaciones, detalles);
         this.agregarEstadoHistorial(nuevaOrden, EstadoPedido.NUEVO);
         OrdenCompra savedOrden = ordenCompraRepository.save(nuevaOrden);
+        //savedOrden = crearPedidoCont(savedOrden);
         return savedOrden;
     }
 
@@ -62,10 +68,18 @@ public class OrdenCompraService {
         return actualizarPedido(aceptarPedido(orden)); 
     }
 
-    public OrdenCompra preparacionPedido(OrdenCompra orden){
+    public OrdenCompra prepararPedidoYActualizar(OrdenCompra orden){
         return actualizarPedido(prepararPedido(orden));
     }
+
+    public OrdenCompra entregarPedidoYActualizar(OrdenCompra orden){
+        return actualizarPedido(entregarPedido(orden));
+    }
     
+    public OrdenCompra cancelarPedidoYActualizar(OrdenCompra orden){
+        return actualizarPedido(cancelarPedido(orden));
+    }
+
     public OrdenCompra actualizarPedido(OrdenCompra orden){
         // validar orden
         OrdenCompra ordenActualizada = ordenCompraRepository.save(orden);
@@ -190,6 +204,23 @@ public class OrdenCompraService {
 
         return retorno;
 
+    }
+
+    private OrdenCompra entregarPedido (OrdenCompra orden){
+        EstadoPedido nuevoEstado;
+        nuevoEstado = EstadoPedido.ENTREGADO;
+        orden.setEstado(nuevoEstado);
+        agregarEstadoHistorial(orden, nuevoEstado);
+        return orden;
+    }
+
+    
+    private OrdenCompra cancelarPedido (OrdenCompra orden){
+        EstadoPedido nuevoEstado;
+        nuevoEstado = EstadoPedido.CANCELADO;
+        orden.setEstado(nuevoEstado);
+        agregarEstadoHistorial(orden, nuevoEstado);
+        return orden;
     }
 
 }

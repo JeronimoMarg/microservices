@@ -1,5 +1,4 @@
 package jeronimo.margitic.productos.service;
-import jeronimo.margitic.productos.repository.ProductoRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,46 +12,42 @@ import jeronimo.margitic.productos.repository.CategoriaRepository;
 @Service
 public class CategoriaService {
 
-    private final ProductoRepository productoRepository;
-
     @Autowired
     private CategoriaRepository categoriaRepository;
 
-    CategoriaService(ProductoRepository productoRepository) {
-        this.productoRepository = productoRepository;
-    }
-    
+    //Obtiene todas las categorias
     public List<Categoria> obtenerTodas(){
         return categoriaRepository.findAll();
     }
 
+    //Obtiene categoria segun id
     public Optional<Categoria> obtenerPorId(int id){
         return categoriaRepository.findById(id);
     }
 
+    //Obtiene las categorias segun nombre
     public List<Categoria> obtenerPorNombre(String nombre){
         return categoriaRepository.findByNombre(nombre);
     }
 
-    public Categoria crearCategoria(Categoria cat){
-        try{
-            validarCategoria(cat);
-            Categoria categoriaCreada = categoriaRepository.save(cat);
-            return categoriaCreada;
-        }catch (Exception e){
-            System.err.println("Error: " + e.getMessage());
-        }
-        return cat;
+    //Crear una categoria.
+    public Categoria crearCategoria(Categoria cat) throws Exception{
+        validarCategoria(cat);
+        Categoria categoriaCreada = categoriaRepository.save(cat);
+        return categoriaCreada;
     }
 
-    public Categoria modificarCategoria(Categoria cat){
+    //Modifica una categoria
+    public Categoria modificarCategoria(Categoria cat) throws Exception{
         return crearCategoria(cat);
     }
 
+    //Eliminar una categoria segun id.
     public void eliminarCategoria(int id){
         categoriaRepository.deleteById(id);
     }
 
+    //Validacion de categoria. Solamente se verifica el nombre.
     private void validarCategoria(Categoria cat) throws IllegalArgumentException{
         if (cat.getNombre() == null){
             throw new IllegalArgumentException("La categoria debe tener un nombre.");

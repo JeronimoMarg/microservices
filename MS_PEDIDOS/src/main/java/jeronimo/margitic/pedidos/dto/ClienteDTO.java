@@ -2,9 +2,19 @@ package jeronimo.margitic.pedidos.dto;
 
 import java.time.LocalDate;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ClienteDTO {
     
     //informacion basica (datos) del cliente solamente

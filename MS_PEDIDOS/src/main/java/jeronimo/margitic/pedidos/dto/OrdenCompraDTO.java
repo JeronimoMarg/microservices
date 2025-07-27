@@ -1,5 +1,8 @@
 package jeronimo.margitic.pedidos.dto;
 
+import java.util.List;
+
+import jeronimo.margitic.pedidos.model.OrdenCompraDetalle;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,13 +16,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductoDTO {
+public class OrdenCompraDTO {
     
-    private int id_producto;
-    private String nombre;
-    private String descripcion;
-    private float precio;
-    private float descuento;
-    private String categoria;
+    private ClienteDTO cliente;
+    private ObraDTO obra;
+    private String observaciones;
+    private List<OrdenCompraDetalle> detalles;
 
 }

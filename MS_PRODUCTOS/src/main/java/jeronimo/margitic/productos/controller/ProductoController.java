@@ -51,16 +51,25 @@ public class ProductoController {
 
     @PostMapping(path = "/crear", consumes = "application/json")
     public ResponseEntity<Producto> crearProducto (@RequestBody Producto productoNuevo) {
-        Producto prodCreado = productoService.crearProducto(productoNuevo);
-        return ResponseEntity.status(201).body(prodCreado);
+        try{
+            Producto prodCreado = productoService.crearProducto(productoNuevo);
+            return ResponseEntity.status(201).body(prodCreado);
+        }catch(Exception e){
+            System.err.println("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping(path="/{id}", consumes="application/json")
     public ResponseEntity<Producto> modificarProducto (@RequestBody Producto productoAModificar, @PathVariable int id){
         Optional<Producto> productoBuscado = productoService.obtenerPorId(id);
         if(productoBuscado.isPresent()){
-            Producto prod = productoService.modificarProducto(productoAModificar);
-            return ResponseEntity.ok(prod);
+            try{
+                Producto prod = productoService.modificarProducto(productoAModificar);
+                return ResponseEntity.ok(prod);
+            }catch(Exception e){
+                return ResponseEntity.badRequest().build();
+            }
         }else{
             return ResponseEntity.notFound().build();
         }
@@ -84,7 +93,12 @@ public class ProductoController {
         if (orden.get("precio") != null && orden.get("cantidadStockRecibido") != null){
             Float precio = Float.valueOf(orden.get("precio").toString());
             Integer cantidadStockRecibido = Integer.valueOf(orden.get("cantidadStockRecibido").toString());
-            productoModificado = productoService.actualizarStockYPrecio(id, precio, cantidadStockRecibido);
+            try{
+                productoModificado = productoService.actualizarStockYPrecio(id, precio, cantidadStockRecibido);
+            }catch (Exception e){
+                System.err.println("Error: " + e.getMessage());
+                return ResponseEntity.badRequest().build();
+            }
         }
 
         if(productoModificado.isPresent()){
@@ -101,7 +115,12 @@ public class ProductoController {
 
         if(descuento.get("descuento") != null){
             Float monto = Float.valueOf(descuento.get("descuento").toString());
-            productoModificado = productoService.actualizarDescuento(id, monto);
+            try{
+                productoModificado = productoService.actualizarDescuento(id, monto);
+            }catch (Exception e){
+                System.err.println("Error: " + e.getMessage());
+                return ResponseEntity.badRequest().build();
+            }
         }
 
         if(productoModificado.isPresent()){
@@ -113,17 +132,26 @@ public class ProductoController {
     }
 
     @PutMapping(path="/actualizarStock/{id}")
-    public ResponseEntity<Boolean> actualizarStockProductos (@PathVariable int id, @RequestBody Map<String, Object> detalle){
+    public ResponseEntity<Producto> actualizarStockProductos (@PathVariable int id, @RequestBody Map<String, Object> detalle){
         
-        Boolean respuesta = false;
+        Optional<Producto> productoModificado = Optional.empty();
 
         if (detalle.get("id") != null && detalle.get("cantidad") != null){
             Integer idProducto = Integer.valueOf(detalle.get("id").toString());
             Integer cantidad = Integer.valueOf(detalle.get("cantidad").toString());
-            respuesta = productoService.actualizarStockProducto(idProducto, cantidad);
+            try{
+                productoModificado = productoService.actualizarStockProducto(idProducto, cantidad);
+            }catch (Exception e){
+                System.err.println("Error: " + e.getMessage());
+                return ResponseEntity.badRequest().build();
+            }
         }
 
-        return ResponseEntity.ok(respuesta);
+        if(productoModificado.isPresent()){
+            return ResponseEntity.ok(productoModificado.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
 
     }
     

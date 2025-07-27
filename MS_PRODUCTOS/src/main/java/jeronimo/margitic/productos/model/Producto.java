@@ -45,9 +45,12 @@ public class Producto {
         this.stockActual = this.stockActual + stock;
     }
 
-    public boolean actualizarStockPedido(int stock){
-        this.stockActual = this.stockActual - stock;
-        return (this.stockActual < 0);
+    public Boolean actualizarStockPedido(int stock){
+        Boolean cond = this.stockActual - stock < 0;
+        if(cond){
+            this.stockActual = this.stockActual - stock;
+        }
+        return cond;
     }
 
 }
