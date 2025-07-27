@@ -11,3 +11,5 @@ Puertos de localhost asignados a cada servicio / microservicio:
 - phpPgMyAdmin : 8084
 
 - ui : 3000
+
+- rabbit: 0 - 5672

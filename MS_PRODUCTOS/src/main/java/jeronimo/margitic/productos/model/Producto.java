@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-
+import jeronimo.margitic.productos.exception.StockInsuficienteException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,10 +45,12 @@ public class Producto {
         this.stockActual = this.stockActual + stock;
     }
 
-    public Boolean actualizarStockPedido(int stock){
+    public Boolean actualizarStockPedido(int stock) throws StockInsuficienteException{
         Boolean cond = this.stockActual - stock < 0;
         if(cond){
             this.stockActual = this.stockActual - stock;
+        }else{
+            throw new StockInsuficienteException("No hay stock suficiente para el producto seleccionado. ");
         }
         return cond;
     }

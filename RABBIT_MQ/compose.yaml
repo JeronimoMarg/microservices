@@ -1,0 +1,8 @@
+services:
+  rabbitmq:
+    image: 'rabbitmq:latest'
+    environment:
+      - 'RABBITMQ_DEFAULT_PASS=secret'
+      - 'RABBITMQ_DEFAULT_USER=admin'
+    ports:
+      - '5672' #Se mapea el pureto 5672 en el contenedor docker.
