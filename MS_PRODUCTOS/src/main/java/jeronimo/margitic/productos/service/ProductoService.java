@@ -1,11 +1,13 @@
 package jeronimo.margitic.productos.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jeronimo.margitic.productos.dto.ProductoDTO;
 import jeronimo.margitic.productos.exception.StockInsuficienteException;
 import jeronimo.margitic.productos.model.Producto;
 import jeronimo.margitic.productos.repository.ProductoRepository;
@@ -15,8 +17,6 @@ public class ProductoService {
     
     @Autowired
     private ProductoRepository productoRepository;
-
-    ConsumerService consumer = new ConsumerService("rabbitmq", 5672, "admin", "secret");
 
     //Obtiene todos los productos.
     public List<Producto> obtenerTodos(){
@@ -46,6 +46,11 @@ public class ProductoService {
     //Modifica un producto.
     public Producto modificarProducto(Producto prod) throws Exception{
         return crearProducto(prod);
+    }
+
+    //Modifica un producto pero no pasa por la validacion
+    public Producto modificarProductoSinValidar(Producto prod) {
+        return productoRepository.save(prod);
     }
 
     //Elimina un produto segun id.
@@ -111,10 +116,19 @@ public class ProductoService {
         return Optional.empty();
     }
 
-    //Hacer metodo que consuma mensajes de Rabbit.
-    //Para cada detalle actualizarStock del producto.
-    //En el caso de que falle alguno entonces poner un mensaje en cola para que se rechace el pedido.
-    //Tambien si falla alguno ver si devolver el stock a los demas productos que han sido descontados? pensar.
-    //Hay que hacer una clase que indique como hacer el receive message
+    //Metodo llamado cuando se escuchan mensajes de la cola rabbit
+    //Devuelve el stock de todos los productos.
+    public List<Producto> reponerStock(List<ProductoDTO> productos){
+        List<Producto> actualizados = new ArrayList<>();
+        for (ProductoDTO p : productos){
+            Optional<Producto> buscado = this.obtenerPorId(p.getId_producto());
+            if(buscado.isPresent()){
+                buscado.get().actualizarStockRecibido(p.getCantidad());
+                Producto aux = this.modificarProductoSinValidar(buscado.get());
+                actualizados.add(aux);
+            }
+        }
+        return actualizados;
+    }
 
 }
