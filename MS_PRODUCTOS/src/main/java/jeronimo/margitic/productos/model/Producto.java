@@ -45,14 +45,14 @@ public class Producto {
         this.stockActual = this.stockActual + stock;
     }
 
-    public Boolean actualizarStockPedido(int stock) throws StockInsuficienteException{
+    public Boolean verificarStockPedido(int stock){
         Boolean cond = this.stockActual - stock < 0;
-        if(cond){
-            this.stockActual = this.stockActual - stock;
-        }else{
-            throw new StockInsuficienteException("No hay stock suficiente para el producto seleccionado. ");
-        }
         return cond;
+    }
+
+    public Producto actualizarStockPedido(int cantidad){
+        this.stockActual -= cantidad;
+        return this;
     }
 
 }

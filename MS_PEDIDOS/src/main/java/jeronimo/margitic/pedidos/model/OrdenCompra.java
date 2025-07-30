@@ -68,7 +68,7 @@ public class OrdenCompra {
         orden.cliente = cliente;
         orden.obra = obra;
         orden.estados = new ArrayList<HistorialEstado>();
-        orden.estado = EstadoPedido.NUEVO;
+        //orden.estado = EstadoPedido.NUEVO;
         orden.total = obtenerTotal(detalles);
         orden.detalles = detalles;
     }

@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jeronimo.margitic.productos.exception.StockInsuficienteException;
 import jeronimo.margitic.productos.model.Producto;
 import jeronimo.margitic.productos.repository.ProductoRepository;
 
@@ -14,6 +15,8 @@ public class ProductoService {
     
     @Autowired
     private ProductoRepository productoRepository;
+
+    ConsumerService consumer = new ConsumerService("rabbitmq", 5672, "admin", "secret");
 
     //Obtiene todos los productos.
     public List<Producto> obtenerTodos(){
@@ -95,17 +98,23 @@ public class ProductoService {
         Optional<Producto> producto = this.obtenerPorId(idProducto);
         if(producto.isPresent() && cantidad > 0){
             //Primero se verifica que exista suficiente stock disponible 
-            Boolean esPosible = producto.get().actualizarStockPedido(cantidad);
+            Boolean esPosible = producto.get().verificarStockPedido(cantidad);
             if (esPosible){
                 //Solamente modificamos el producto si se tiene stock
-                Producto modificado = this.modificarProducto(producto.get());
+                Producto modificado = producto.get().actualizarStockPedido(cantidad); 
+                modificado = this.modificarProducto(modificado);
                 return Optional.ofNullable(modificado);
-            }else{
-                //Meter alguna logica en el caso de que no haya stock
+            } else{
+                throw new StockInsuficienteException("No hay stock suficiente para el producto con id: " + String.valueOf(idProducto));
             }
-            return producto;
         }
         return Optional.empty();
     }
+
+    //Hacer metodo que consuma mensajes de Rabbit.
+    //Para cada detalle actualizarStock del producto.
+    //En el caso de que falle alguno entonces poner un mensaje en cola para que se rechace el pedido.
+    //Tambien si falla alguno ver si devolver el stock a los demas productos que han sido descontados? pensar.
+    //Hay que hacer una clase que indique como hacer el receive message
 
 }
