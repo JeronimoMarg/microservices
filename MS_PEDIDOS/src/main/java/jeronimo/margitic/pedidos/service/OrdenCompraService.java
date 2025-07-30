@@ -72,7 +72,7 @@ public class OrdenCompraService {
         return savedOrden;
     }
 
-    //Los siguientes metodos cambian el estado de un pedido y los guardan en la BD.
+    //Este metodo no sirve para nada...
     public OrdenCompra crearPedidoYActualizar(OrdenCompra orden) throws Exception{
         return actualizarPedido(aceptarPedido(orden)); 
     }

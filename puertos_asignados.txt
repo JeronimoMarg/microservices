@@ -10,6 +10,10 @@ Puertos de localhost asignados a cada servicio / microservicio:
 - productos: 0 - 8083
 - phpPgMyAdmin : 8084
 
+- pedidos: 0 - 8085
+- mongo: 27017
+- mongo-express: 8086
+
 - ui : 3000
 
 - rabbit: 0 - 5672

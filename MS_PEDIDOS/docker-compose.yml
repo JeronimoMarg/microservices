@@ -1,0 +1,64 @@
+version: "3.9" # Latest stable version of Compose
+
+services:
+  pedido-service:
+    image: imagen_pedidos
+    container_name: pedido-service
+    build:
+      context: . # Path to the Dockerfile (current directory)
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8080" # Map random port to container port 8080
+    deploy:
+      replicas: 1
+      #restart_policy:
+        #condition: on-failure
+    environment:
+      SPRING_DATA_MONGODB_HOST: mongo_db
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_DATABASE: pedidosdb
+      SPRING_DATA_MONGODB_USERNAME: admin
+      SPRING_DATA_MONGODB_PASSWORD: admin
+      SPRING_DATA_MONGODB_URL: mongodb://admin:admin@mongo_db:27017/pedidosdb?authSource=admin
+    depends_on:
+      - mongo_db # Ensure the database starts before the application
+    networks:
+      - pedido-network
+      - services-network
+
+  mongo_db:
+    image: mongo
+    container_name: mongo_db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - pedido-network
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    container_name: mongo-express
+    ports:
+      - "8086:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo_db
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo_db:27017/
+    depends_on:
+      - mongo_db
+
+networks:
+  pedido-network:
+    name: "pedido-network"
+    driver: bridge
+  services-network:
+    external: true
+
+volumes:
+  mongo_data: # Volume for database persistence
