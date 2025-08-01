@@ -10,7 +10,8 @@ public class ProductoDTO {
     //esta clase solamente se usa para recibir los productos de la cola.
     //Son los productos "cancelados"
 
-    private Integer id_producto;
+    private Integer id_orden;
+    private Long id_producto;
     private Integer cantidad;
     
 }

@@ -13,13 +13,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductoDTO {
+public class ActualizacionStockDTO {
     
+    private int id_orden;
     private Long id_producto;
-    private String nombre;
-    private String descripcion;
-    private float precio;
-    private float descuento;
-    private String categoria;
+    private Integer cantidad;
 
 }

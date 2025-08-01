@@ -1,17 +1,11 @@
-package jeronimo.margitic.pedidos.service;
+package jeronimo.margitic.productos.service;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-
-import jeronimo.margitic.pedidos.dto.ActualizacionStockDTO;
 
 @Service
 public class SenderService {

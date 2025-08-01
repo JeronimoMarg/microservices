@@ -32,7 +32,7 @@ public class ProductoController {
     ProductoService productoService;
 
     @GetMapping("/{productoId}")
-    public ResponseEntity<Producto> obtenerProductoPorId(@PathVariable(name="productoId") int id) {
+    public ResponseEntity<Producto> obtenerProductoPorId(@PathVariable(name="productoId") Long id) {
         Optional<Producto> productoBuscado = productoService.obtenerPorId(id);
         return ResponseEntity.of(productoBuscado);
     }
@@ -61,7 +61,7 @@ public class ProductoController {
     }
 
     @PutMapping(path="/{id}", consumes="application/json")
-    public ResponseEntity<Producto> modificarProducto (@RequestBody Producto productoAModificar, @PathVariable int id){
+    public ResponseEntity<Producto> modificarProducto (@RequestBody Producto productoAModificar, @PathVariable Long id){
         Optional<Producto> productoBuscado = productoService.obtenerPorId(id);
         if(productoBuscado.isPresent()){
             try{
@@ -76,7 +76,7 @@ public class ProductoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Producto> eliminarProducto (@PathVariable int id){
+    public ResponseEntity<Producto> eliminarProducto (@PathVariable Long id){
         Optional<Producto> productoBuscado = productoService.obtenerPorId(id);
         if(productoBuscado.isPresent()){
             productoService.eliminarProducto(id);
@@ -87,7 +87,7 @@ public class ProductoController {
     }
 
     @PutMapping(path="/{id}/actualizarStockPrecio")
-    public ResponseEntity<Producto> actualizarStockPrecio (@PathVariable int id, @RequestBody Map<String, Object> orden ){
+    public ResponseEntity<Producto> actualizarStockPrecio (@PathVariable Long id, @RequestBody Map<String, Object> orden ){
         Optional<Producto> productoModificado = Optional.empty();
 
         if (orden.get("precio") != null && orden.get("cantidadStockRecibido") != null){
@@ -109,7 +109,7 @@ public class ProductoController {
     }
 
     @PutMapping(path="/{id}/actualizarDescuento")
-    public ResponseEntity<Producto> actualizarDescuento (@PathVariable int id, @RequestBody Map<String, Object> descuento){
+    public ResponseEntity<Producto> actualizarDescuento (@PathVariable Long id, @RequestBody Map<String, Object> descuento){
 
         Optional<Producto> productoModificado = Optional.empty();
 
@@ -132,12 +132,12 @@ public class ProductoController {
     }
 
     @PutMapping(path="/actualizarStock/{id}")
-    public ResponseEntity<Producto> actualizarStockProductos (@PathVariable int id, @RequestBody Map<String, Object> detalle){
+    public ResponseEntity<Producto> actualizarStockProductos (@PathVariable Long id, @RequestBody Map<String, Object> detalle){
         
         Optional<Producto> productoModificado = Optional.empty();
 
         if (detalle.get("id") != null && detalle.get("cantidad") != null){
-            Integer idProducto = Integer.valueOf(detalle.get("id").toString());
+            Long idProducto = Long.valueOf(detalle.get("id").toString());
             Integer cantidad = Integer.valueOf(detalle.get("cantidad").toString());
             try{
                 productoModificado = productoService.actualizarStockProducto(idProducto, cantidad);

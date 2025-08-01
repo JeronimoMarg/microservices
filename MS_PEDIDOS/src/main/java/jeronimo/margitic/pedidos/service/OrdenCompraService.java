@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import jeronimo.margitic.pedidos.dto.ActualizacionStockDTO;
 import jeronimo.margitic.pedidos.dto.ClienteDTO;
+import jeronimo.margitic.pedidos.dto.ConfirmacionStockDTO;
 import jeronimo.margitic.pedidos.dto.ObraDTO;
 import jeronimo.margitic.pedidos.dto.OrdenCompraDTO;
 import jeronimo.margitic.pedidos.exception.SaldoInsuficienteException;
@@ -88,7 +90,7 @@ public class OrdenCompraService {
 
     public OrdenCompra prepararPedidoYActualizar(OrdenCompra orden) throws Exception{
         try{
-            return actualizarPedido(prepararPedido(orden));
+            return actualizarPedido(prepararPedidoAsincrono(orden));
         }catch(StockInsuficienteException e){
             //El pedido queda en estado ACEPTADO
             throw(e);
@@ -99,7 +101,7 @@ public class OrdenCompraService {
         return actualizarPedido(entregarPedido(orden));
     }
 
-    public OrdenCompra cancelarPedidoYActualizar(OrdenCompra orden) throws Exception{
+    public OrdenCompra cancelarPedidoYActualizar_conMap(OrdenCompra orden) throws Exception{
         //Si se cancela el pedido entonces devolver el stock de todos los productos --> rabbit
         OrdenCompra cancelada = actualizarPedido(cancelarPedido(orden));
         //Devolver todo el stock de productos
@@ -109,6 +111,21 @@ public class OrdenCompraService {
             Map<String,Object> item = new HashMap<>();
             item.put("id_producto", o.getProducto().getId_producto());
             item.put("cantidad",o.getCantidad());
+            listaProductos.add(item);
+        }
+        System.out.println("Productos cancelados: " + listaProductos);
+        sender.sendList("cola_cancelacion", listaProductos);
+        return cancelada;
+    }
+
+    public OrdenCompra cancelarPedidoYActualizar_conDTO(OrdenCompra orden) throws Exception{
+        //Si se cancela el pedido entonces devolver el stock de todos los productos --> rabbit
+        OrdenCompra cancelada = actualizarPedido(cancelarPedido(orden));
+        //Devolver todo el stock de productos
+        List<ActualizacionStockDTO> listaProductos = new ArrayList<>();
+        //Se manda una lista de objetos dto
+        for(OrdenCompraDetalle o: orden.getDetalles()){
+            ActualizacionStockDTO item = new ActualizacionStockDTO(orden.getId(), o.getProducto().getId_producto(), o.getCantidad());
             listaProductos.add(item);
         }
         System.out.println("Productos cancelados: " + listaProductos);
@@ -238,79 +255,53 @@ public class OrdenCompraService {
         return orden;
     }
 
-    //Actualiza el stock de productos para un pedido.
-    private Map<Integer,Boolean> actualizarStockProductos (OrdenCompra orden){
-        HashMap<Integer, Integer> cantidades = new HashMap<>(); 
-        //obtener los detalles de la orden de compra
-        //Se arma un objeto JSON con la forma
-        /*
-         * [id] : [cantidad]
-         * 1: 100
-         * 2: 200
-         */
+    //Se prepara un pedido de forma asincrona poniendolo en una cola RABBIT
+    private OrdenCompra prepararPedidoAsincrono (OrdenCompra orden){
+        //primero, se manda a la cola todos los detalles
+        actualizarStockProductosAsincrono(orden);
+        //el estado solo se actualiza si todos los productos logran actualizarse correctamente.
+        return orden;
+    }
+
+    //Actualiza el stock de productos para un pedido. (DE FORMA ASINCRONA RABBITMQ)
+    private List<ActualizacionStockDTO> actualizarStockProductosAsincrono (OrdenCompra orden){
+        List<ActualizacionStockDTO> actualizaciones = new ArrayList<>();
         orden.getDetalles()
         .stream()
-        .forEach(d -> cantidades.put(d.getProducto().getId_producto(), d.getCantidad()));
-
-        //armar retorno
-        //mapa integer , boolean
-        //integer = id producto
-        //boolean = si pudo actualizarce el stock normalmente
-        Map<Integer,Boolean> retorno = new HashMap<>();
-
-        //consultar via rest api todos los detalles
-        for(Map.Entry<Integer, Integer> entry : cantidades.entrySet()){
-            // entry.getKey() is the product ID, entry.getValue() is the quantity
-            boolean respuesta = consultaRESTStockProductos(entry.getKey(), entry.getValue());
-
-            //Se agrega un elemento al mapa
-            retorno.put(entry.getKey(), respuesta);
-
-            // Si hay stock, el servicio de productos ya lo actualizó
-        }
-        return retorno;
+        .forEach(d -> {
+            ActualizacionStockDTO aux = new ActualizacionStockDTO(orden.getId(), d.getProducto().getId_producto(), d.getCantidad());
+            actualizaciones.add(aux);
+        });
+        sender.sendList("cola_preparacion", actualizaciones);
+        return actualizaciones;
     }
 
-    //Se hace la consulta REST al servicio de productos.
-    private boolean consultaRESTStockProductos (Integer id, Integer cantidad){
-
-        String url = url_productos + "/actualizarStock" + String.valueOf(id);
-
-        //Se hace un objeto JSON con la siguiente forma
-        /*
-         * "id":1,
-         * "cantidad":100
-         */
-        Map<String, Object> body = new HashMap<>();
-        body.put("id", id);
-        body.put("cantidad", cantidad);
-
-        ResponseEntity<Map> respuesta = restTemplate.exchange(
-            url,
-            org.springframework.http.HttpMethod.PUT,
-            new HttpEntity<>(body),
-            Map.class
-        );
-        // Si el producto se actualizó, hay stock suficiente
-        return respuesta.getStatusCode().is2xxSuccessful();
+    //Metodo llamado desde el listener de la cola.
+    //Verifica que todas las confirmaciones fueron true para preparar un pedido.
+    public Optional<OrdenCompra> devolucionPreparacionPedido(List<ConfirmacionStockDTO> confirmaciones) throws Exception{
         
-    }
-    
-    //Se prepara un pedido
-    private OrdenCompra prepararPedido (OrdenCompra orden) throws StockInsuficienteException{
-        EstadoPedido nuevoEstado;
-        Map<Integer,Boolean> actualizaciones = actualizarStockProductos(orden);
-        Map<Integer,Boolean> mapaFalso = actualizaciones.entrySet().stream().filter(e -> !e.getValue()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        if(mapaFalso.size() == 0){
-            nuevoEstado = EstadoPedido.EN_PREPARACION;
-            orden.setEstado(nuevoEstado);
-            agregarEstadoHistorial(orden, nuevoEstado);
+        //Pensar bien que pasa con los ids de las obras
+        //Si se mezclan DTOs dentro de la cola?
+
+        int id_orden = confirmaciones.getFirst().getId_orden();
+
+        List<ConfirmacionStockDTO> rechazados = confirmaciones.stream().filter(c -> !c.getActualizado()).collect(Collectors.toList());
+        long cantidadRechazados = rechazados.stream().count();
+
+        EstadoPedido nuevoEstado = EstadoPedido.EN_PREPARACION;
+        Optional<OrdenCompra> orden = this.obtenerPedidoPorId(id_orden);
+
+        if (cantidadRechazados == 0){
+            if(orden.isPresent()){
+                orden.get().setEstado(nuevoEstado);
+                OrdenCompra aux = agregarEstadoHistorial(orden.get(), nuevoEstado);
+                //en este caso se guarda
+                this.actualizarPedido(aux);
+            }
         }else{
-            Set<Integer> ids = mapaFalso.keySet();
-            // devolver stock ... rabbit ?
-            // o simplemente volver a descontar stock con otro metodo dentro de un tiempo ...
-            throw new StockInsuficienteException("No hay stock para algunos de los productos indicados: " + ids);
+            //se puede agregar una parte donde 'rechazados' se mande a otra cola...
         }
+
         return orden;
     }
 
@@ -352,5 +343,85 @@ public class OrdenCompraService {
         agregarEstadoHistorial(orden, nuevoEstado);
         return orden;
     }
+
+    /*
+    //Actualiza el stock de productos para un pedido (de forma SINCRONA)
+    private Map<Long,Boolean> actualizarStockProductos (OrdenCompra orden){
+        HashMap<Long, Integer> cantidades = new HashMap<>(); 
+        //obtener los detalles de la orden de compra
+        //Se arma un objeto JSON con la forma
+        
+        //
+        // [id] : [cantidad]
+        // 1: 100
+        // 2: 200
+
+        orden.getDetalles()
+        .stream()
+        .forEach(d -> cantidades.put(d.getProducto().getId_producto(), d.getCantidad()));
+
+        //armar retorno
+        //mapa integer , boolean
+        //integer = id producto
+        //boolean = si pudo actualizarce el stock normalmente
+        Map<Long,Boolean> retorno = new HashMap<>();
+
+        //consultar via rest api todos los detalles
+        for(Map.Entry<Long, Integer> entry : cantidades.entrySet()){
+            // entry.getKey() is the product ID, entry.getValue() is the quantity
+            boolean respuesta = consultaRESTStockProductos(entry.getKey(), entry.getValue());
+
+            //Se agrega un elemento al mapa
+            retorno.put(entry.getKey(), respuesta);
+
+            // Si hay stock, el servicio de productos ya lo actualizó
+        }
+        return retorno;
+    }
+
+    //Se hace la consulta REST al servicio de productos.
+    private boolean consultaRESTStockProductos (Long id, Integer cantidad){
+
+        String url = url_productos + "/actualizarStock" + String.valueOf(id);
+
+        //Se hace un objeto JSON con la siguiente forma
+        //
+        // "id":1,
+        // "cantidad":100
+        //
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("id", id);
+        body.put("cantidad", cantidad);
+
+        ResponseEntity<Map> respuesta = restTemplate.exchange(
+            url,
+            org.springframework.http.HttpMethod.PUT,
+            new HttpEntity<>(body),
+            Map.class
+        );
+        // Si el producto se actualizó, hay stock suficiente
+        return respuesta.getStatusCode().is2xxSuccessful();
+        
+    }
+    
+    //Se prepara un pedido
+    private OrdenCompra prepararPedido (OrdenCompra orden) throws StockInsuficienteException{
+        EstadoPedido nuevoEstado;
+        Map<Long,Boolean> actualizaciones = actualizarStockProductos(orden);
+        Map<Long,Boolean> mapaFalso = actualizaciones.entrySet().stream().filter(e -> !e.getValue()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        if(mapaFalso.size() == 0){
+            nuevoEstado = EstadoPedido.EN_PREPARACION;
+            orden.setEstado(nuevoEstado);
+            agregarEstadoHistorial(orden, nuevoEstado);
+        }else{
+            Set<Long> ids = mapaFalso.keySet();
+            // devolver stock ... rabbit ?
+            // o simplemente volver a descontar stock con otro metodo dentro de un tiempo ...
+            throw new StockInsuficienteException("No hay stock para algunos de los productos indicados: " + ids);
+        }
+        return orden;
+    }
+     */
 
 }

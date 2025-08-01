@@ -11,7 +11,8 @@ import jeronimo.margitic.productos.model.Producto;
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Integer>{
     
-    Optional<Producto> findById(int id);
+    Optional<Producto> findById(Long idProducto);
     List<Producto> findByNombre(String nombre);
+    void deleteById(Long id);
     
 }
