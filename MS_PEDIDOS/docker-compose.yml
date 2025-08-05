@@ -52,6 +52,8 @@ services:
       ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo_db:27017/
     depends_on:
       - mongo_db
+    networks:
+      - pedido-network
 
 networks:
   pedido-network:

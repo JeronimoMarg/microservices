@@ -1,0 +1,19 @@
+# version: "3.9"
+
+services:
+  usuario-service:
+    build:
+      context: . # Path to the Dockerfile (current directory)
+      dockerfile: Dockerfile
+    container_name: usuario-service
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app/__init__.py
+      - FLASK_ENV=development # activa el modo debug 
+    command: flask run --host=0.0.0.0 --port=5000
+    volumes:
+      - ./app:/app/app  # optional: enables live code changes (hot reload)
+    restart: unless-stopped
+
+    #agregar la network
