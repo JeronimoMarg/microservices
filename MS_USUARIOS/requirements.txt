@@ -1,1 +1,6 @@
 flask
+Flask-CORS
+Flask-JWT-Extended
+Flask-SQLAlchemy
+Flask-Bcrypt
+psycopg2-binary

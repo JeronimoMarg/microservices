@@ -8,7 +8,7 @@ Puertos de localhost asignados a cada servicio / microservicio:
 
 - postgres_productos : 5432
 - productos: 0 - 8083
-- phpPgMyAdmin : 8084
+- pgMyAdmin : 8084
 
 - pedidos: 0 - 8085
 - mongo: 27017
@@ -17,3 +17,7 @@ Puertos de localhost asignados a cada servicio / microservicio:
 - ui : 3000
 
 - rabbit: 0 - 5672
+
+- usuarios: 5000
+- postgres_usuarios: 5001
+- pgadmin: 8087

@@ -9,11 +9,62 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - FLASK_APP=app/__init__.py
-      - FLASK_ENV=development # activa el modo debug 
+      - FLASK_ENV=development
+      - FLASK_APP=app/main.py
+      - SECRET_KEY=super-secret
+      - JWT_SECRET_KEY=jwt-secret
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=auth_db
+      - DB_USER=auth_user
+      - DB_PASSWORD=auth_pass
+    depends_on:
+      - postgres
     command: flask run --host=0.0.0.0 --port=5000
     volumes:
       - ./app:/app/app  # optional: enables live code changes (hot reload)
     restart: unless-stopped
+    networks:
+      - usuario-network
+      - services-network
 
-    #agregar la network
+  postgres:
+    image: postgres
+    container_name: auth_postgres
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5001:5432"
+    networks:
+      - usuario-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_usuarios
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: test@admin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8087:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/postgresql/data
+    networks:
+      - usuario-network
+
+networks:
+  usuario-network:
+    name: "usuario-network"
+    driver: bridge
+  services-network:
+    external: true
+
+volumes:
+ postgres_data:
+ pgadmin_data:

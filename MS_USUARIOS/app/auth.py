@@ -1,106 +1,39 @@
-import functools
+from flask import Blueprint, request, jsonify
+from app.models import db, Usuario
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
-)
+routes = Blueprint('auth', __name__)
 
-from werkzeug.security import check_password_hash, generate_password_hash
+print("Configurando las rutas...")
 
-from app.db import get_db
-
-bp = Blueprint('auth', __name__, url_prefix='/auth')
-
-@bp.route('/register', methods=('GET', 'POST'))
+@routes.route("/register", methods=["POST"])
 def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        db = get_db()
-        error = None
+    data = request.get_json()
+    if not data or "email" not in data or "password" not in data:
+        return jsonify({"msg": "Datos invalidos"}), 400
 
-        if not username:
-            error = 'Username is required.'
-        elif not password:
-            error = 'Password is required.'
+    if Usuario.query.filter_by(email=data["email"]).first():
+        return jsonify({"msg": "El usuario ya existe"}), 409
 
-        if error is None:
-            try:
-                db.execute(
-                    "INSERT INTO user (username, password) VALUES (?, ?)",
-                    (username, generate_password_hash(password)),
-                )
-                db.commit()
-            except db.IntegrityError:
-                error = f"User {username} is already registered."
-            else:
-                return redirect(url_for("auth.login"))
+    user = Usuario.create(data["email"], data["password"])
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"msg": "Usuario creado"}), 201
 
-        flash(error)
-
-    return render_template('register.html')
-
-@bp.route('/login', methods=('GET', 'POST'))
+@routes.route("/login", methods=["POST"])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        db = get_db()
-        error = None
-        user = db.execute(
-            'SELECT * FROM user WHERE username = ?', (username,)
-        ).fetchone()
+    data = request.get_json()
+    user = Usuario.query.filter_by(email=data.get("email")).first()
+    if not user or not user.check_password(data.get("password")):
+        return jsonify({"msg": "Email o contraseña incorrectos"}), 401
 
-        if user is None:
-            error = 'Incorrect username.'
-        elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
+    access_token = create_access_token(identity=user.email)
+    return jsonify(access_token=access_token), 200
 
-        if error is None:
-            session.clear()
-            session['user_id'] = user['id']
-            return redirect(url_for('index'))
-
-        flash(error)
-
-    return render_template('login.html')
-
-'''
-session is a dict that stores data across requests. When validation succeeds, the user’s id is stored in a new session. 
-The data is stored in a cookie that is sent to the browser, and the browser then sends it back with subsequent requests. 
-Flask securely signs the data so that it can’t be tampered with.
-
-Now that the user’s id is stored in the session, it will be available on subsequent requests. 
-At the beginning of each request, if a user is logged in their information should be loaded and made available to other views.
-'''
-
-@bp.before_app_request
-def load_logged_in_user():
-    user_id = session.get('user_id')
-
-    if user_id is None:
-        g.user = None
-    else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
-
-'''
-bp.before_app_request() registers a function that runs before the view function, no matter what URL is requested. 
-load_logged_in_user checks if a user id is stored in the session and gets that user’s data from the database, storing it on g.user, which lasts for the length of the request. 
-If there is no user id, or if the id doesn’t exist, g.user will be None.
-'''
-
-@bp.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('index'))
-
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for('auth.login'))
-
-        return view(**kwargs)
-
-    return wrapped_view
+@routes.route("/profile", methods=["GET"])
+@jwt_required()
+def profile():
+    #Para consultar esto pasar el token recibido en login en el header 'Authorization' con valor 'Bearer {token}'
+    identity = get_jwt_identity()
+    return jsonify(email=identity), 200
