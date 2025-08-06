@@ -7,7 +7,7 @@ routes = Blueprint('auth', __name__)
 
 print("Configurando las rutas...")
 
-@routes.route("/register", methods=["POST"])
+@routes.route("/auth/register", methods=["POST"])
 def register():
     data = request.get_json()
     if not data or "email" not in data or "password" not in data:
@@ -21,7 +21,7 @@ def register():
     db.session.commit()
     return jsonify({"msg": "Usuario creado"}), 201
 
-@routes.route("/login", methods=["POST"])
+@routes.route("/auth/login", methods=["POST"])
 def login():
     data = request.get_json()
     user = Usuario.query.filter_by(email=data.get("email")).first()
@@ -31,7 +31,7 @@ def login():
     access_token = create_access_token(identity=user.email)
     return jsonify(access_token=access_token), 200
 
-@routes.route("/profile", methods=["GET"])
+@routes.route("/auth/profile", methods=["GET"])
 @jwt_required()
 def profile():
     #Para consultar esto pasar el token recibido en login en el header 'Authorization' con valor 'Bearer {token}'

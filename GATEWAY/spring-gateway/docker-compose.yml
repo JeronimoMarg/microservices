@@ -2,11 +2,13 @@ version: '3.8'
 
 services:
   gateway-server:
-    image: gateway-server:latest   # Replace with your image name if needed
+    image: gateway-server:latest
     container_name: gateway
     build:
       context: .
-      dockerfile: Dockerfile      # Assumes your Dockerfile is in the current directory
+      dockerfile: Dockerfile
+    enviroment:
+      SPRING_EUREKA_DEFAULT_ZONE: http://eureka-server:8761/eureka/
     ports:
       - "8080:8080"
     networks:
