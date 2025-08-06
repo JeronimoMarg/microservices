@@ -4,6 +4,7 @@ from app.auth import routes
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from app.config import Config
+from app.register_eureka import register_with_eureka
 
 print("App Flask arrancando...")
 
@@ -16,6 +17,9 @@ bcrypt.init_app(app)
 jwt = JWTManager(app)
 
 app.register_blueprint(routes)
+
+#Se registra con eureka para poder usarse en el gateway.
+register_with_eureka()
 
 with app.app_context():
     db.create_all()
