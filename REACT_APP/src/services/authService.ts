@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { LoginRequest, RegisterRequest, AuthResponse, User } from '../types/auth';
 
-const API_BASE_URL = 'http://localhost:5000/auth';
+const API_BASE_URL = 'http://localhost:8080/auth';
+//'http://localhost:5000/auth';
 
 // Configurar axios con interceptores para manejar tokens
 const api = axios.create({
