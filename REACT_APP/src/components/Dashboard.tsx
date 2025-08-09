@@ -9,6 +9,18 @@ const Dashboard: React.FC = () => {
     logout();
   };
 
+  const handleIrClientes = () => {
+    console.log("Se apreto boton de ir clientes");
+  }
+
+  const handleIrProductos = () => {
+    console.log("Se apreto boton de ir productos");
+  }
+
+  const handleIrPedidos = () => {
+    console.log("Se apreto boton de ir pedidos");
+  }
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -38,6 +50,21 @@ const Dashboard: React.FC = () => {
             <p>🔐 Válido</p>
           </div>
         </div>
+
+        <div className="botones-servicios">
+          <div className="boton-servicio">
+            <button onClick={handleIrClientes} className="boton-servicio-clientes">Ir a clientes</button>
+          </div>
+
+          <div className="boton-servicio">
+            <button onClick={handleIrProductos} className="boton-servicio-productos">Ir a productos</button>
+          </div>
+
+          <div className="boton-servicio">
+            <button onClick={handleIrPedidos} className="boton-servicio-pedidos">Ir a pedidos</button>
+          </div>
+        </div>
+
       </div>
     </div>
   );
