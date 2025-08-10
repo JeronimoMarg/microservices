@@ -25,8 +25,14 @@ const crear = (nuevoCliente: ClienteCrearTemplate) => {
     return promesa.then(respuesta => respuesta.data);
 }
 
-const actualizar = () => {
-    //completar
+const actualizar = (id: BigInteger, nuevoCliente: ClienteCrearTemplate) => {
+    const promesa = axios.put(`${BASE_URL}/${id}`, nuevoCliente);
+    return promesa.then(respuesta => respuesta.data);
 }
 
-export default {getAll, crear, actualizar}
+const eliminar = (id: BigInteger) => {
+    const promesa = axios.delete(`${BASE_URL}/${id}`);
+    return promesa.then(respuesta => respuesta.data);
+}
+
+export default {getAll, crear, actualizar, eliminar}

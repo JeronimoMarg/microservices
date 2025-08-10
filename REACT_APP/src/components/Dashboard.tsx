@@ -1,9 +1,12 @@
 import React from 'react';
+import {useState} from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import './Dashboard.css';
+import Clientes from './Clientes.jsx';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const [vista, setVista] = useState<'dashboard' | 'clientes' | 'productos' | 'pedidos'>('dashboard');
 
   const handleLogout = () => {
     logout();
@@ -11,6 +14,7 @@ const Dashboard: React.FC = () => {
 
   const handleIrClientes = () => {
     console.log("Se apreto boton de ir clientes");
+    setVista('clientes');
   }
 
   const handleIrProductos = () => {
@@ -19,6 +23,30 @@ const Dashboard: React.FC = () => {
 
   const handleIrPedidos = () => {
     console.log("Se apreto boton de ir pedidos");
+  }
+
+  const handleVolverDashboard = () => {
+    console.log('Se apreto boton para volver al dashboard.');
+    setVista('dashboard');
+  }
+
+  if (vista === 'clientes') {
+    return (
+      <div className="dashboard-container">
+        <div className="dashboard-header">
+          <h1>Gestión de Clientes</h1>
+          <div className="header-buttons">
+            <button onClick={handleVolverDashboard} className="back-button">
+              Volver al Dashboard
+            </button>
+            <button onClick={handleLogout} className="logout-button">
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+        <Clientes />
+      </div>
+    );
   }
 
   return (

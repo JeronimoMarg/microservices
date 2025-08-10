@@ -9,7 +9,6 @@ const Clientes = () => {
     const [clienteBuscado, setClienteBuscado] = useState('');
     const [clientes, setClientes] = useState([]);
     const [clienteEditado, setClienteEditado] = useState('');
-    const [clienteEliminado, setClienteEliminado] = useState('');
 
     const [mostrarModalCreacion, setMostrarModalCreacion] = useState(false);
     const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
@@ -43,7 +42,6 @@ const Clientes = () => {
         setMostrarModalEdicion(false);
         setClienteEditado('');
     }
-
     //FIN HANDLERS
 
     //HOOKS
@@ -61,7 +59,13 @@ const Clientes = () => {
     useEffect(hookListarClientes, []);
     console.log('se renderizaron: ', clientes.length, 'clientes');
 
-    const clientesMapeados = clientes.map(c => <ElementoCliente key={c.id} cliente={c} handlerEditar={handleAbrirModalEditarCliente}> </ElementoCliente>)
+    const clientesMapeados = clientes.map(c => 
+        <ElementoCliente 
+        key={c.id} 
+        cliente={c} 
+        handlerEditar={handleAbrirModalEditarCliente}
+        onSuccessDelete={hookListarClientes}> 
+        </ElementoCliente>)
     //clientesMapeados es otro componente react que a su vez tiene dos botones mas editar eliminar
 
     //Necesita una barra buscador
@@ -94,19 +98,19 @@ const Clientes = () => {
                 </ul>
             </div>
 
-            <ModalCliente>
+            <ModalCliente
                 open={mostrarModalCreacion}
                 onClose={handleCerrarModalCrearCliente}
                 onSuccess={hookListarClientes}
-                modo="creacion"
+                modo="creacion">
             </ModalCliente>
 
-            <ModalCliente>
+            <ModalCliente
                 open={mostrarModalEdicion}
                 onClose={handleCerrarModalEditarCliente}
                 onSuccess={hookListarClientes}
                 modo="edicion"
-                cliente={clienteEditado}
+                cliente={clienteEditado}>
             </ModalCliente>
 
         </div>
