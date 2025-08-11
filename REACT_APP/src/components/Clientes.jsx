@@ -3,6 +3,7 @@ import clienteService from '../services/clienteService';
 import ElementoCliente from './ElementoCliente';
 import ModalCliente from './ModalCliente';
 import './Clientes.css';
+import Notificacion from './Notificacion';
 
 const Clientes = () => {
 
@@ -13,6 +14,8 @@ const Clientes = () => {
     const [mostrarModalCreacion, setMostrarModalCreacion] = useState(false);
     const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
 
+    const [notificacion, setNotificacion] = useState({mensaje:null, tipo:''});
+
     //HANDLERS
     const handleBusquedaCliente = (event) => {
         console.log(event.target.value);
@@ -21,26 +24,35 @@ const Clientes = () => {
 
     const handleAbrirModalCrearCliente = (event) => {
         console.log("Se apreto boton para crear un cliente.");
-        //Abrir panel form con datos para crear cliente.
         setMostrarModalCreacion(true);
     }
 
     const handleCerrarModalCrearCliente = (event) => {
-        //Cerrar el modal
         setMostrarModalCreacion(false);
+        setTimeout(() => {
+          setNotificacion({ mensaje: null, tipo: '' })
+        }, 3000)
     }
 
-    const handleAbrirModalEditarCliente = (event) => {
-        console.log("Se apreto boton para editar un cliente.");
-        setClienteEditado(event.target.value);
-        //Abrir panel form con datos para crear cliente.
+    const handleAbrirModalEditarCliente = (cliente) => {
+        console.log("Se apreto boton para editar el cliente con id: ", cliente.id);
+        setClienteEditado(cliente);
         setMostrarModalEdicion(true);
     }
 
     const handleCerrarModalEditarCliente = (event) => {
-        //Cerrar el modal
         setMostrarModalEdicion(false);
         setClienteEditado('');
+        setTimeout(() => {
+          setNotificacion({ mensaje: null, tipo: '' })
+        }, 3000)
+    }
+
+    const handleFinEliminarCliente = () => {
+        hookListarClientes();
+        setTimeout(() => {
+          setNotificacion({ mensaje: null, tipo: '' })
+        }, 3000)
     }
     //FIN HANDLERS
 
@@ -57,16 +69,21 @@ const Clientes = () => {
 
     //Se corre este efecto solamente con el primer render del componente.
     useEffect(hookListarClientes, []);
-    console.log('se renderizaron: ', clientes.length, 'clientes');
 
-    const clientesMapeados = clientes.map(c => 
-        <ElementoCliente 
-        key={c.id} 
-        cliente={c} 
-        handlerEditar={handleAbrirModalEditarCliente}
-        onSuccessDelete={hookListarClientes}> 
-        </ElementoCliente>)
     //clientesMapeados es otro componente react que a su vez tiene dos botones mas editar eliminar
+    const clientesMapeados = 
+        clientes
+        .filter(c => 
+            c.dni.toString().startsWith(clienteBuscado))
+        .map(c => 
+            <ElementoCliente 
+            key={c.id}
+            cliente={c} 
+            handlerEditar={handleAbrirModalEditarCliente}
+            onSuccessDelete={handleFinEliminarCliente}
+            setNotificacion={setNotificacion}> 
+            </ElementoCliente>);
+    console.log('Se renderizaron: ', clientesMapeados.length, 'clientes');
 
     //Necesita una barra buscador
     //Necesita un boton de +CREAR CLIENTE
@@ -74,12 +91,14 @@ const Clientes = () => {
     //Por cada cliente mostrado debe tener un boton de tacho para eliminar
     //Por cada cliente mostrado debe tener un boton para ver las obras
     return (
-        <div>
+        <div className="clientes-container">
+
+            <Notificacion mensaje={notificacion.mensaje} tipo={notificacion.tipo}></Notificacion>
             
             <div className="barra-busqueda-clientes">
                 <form>
                     <input
-                    placeholder="Buscar por nombre, apellido o DNI" 
+                    placeholder="Buscar por DNI" 
                     value={clienteBuscado} 
                     onChange={handleBusquedaCliente}>
                     </input>
@@ -93,16 +112,24 @@ const Clientes = () => {
             </div>
 
             <div className="lista-clientes">
-                <ul>
-                    {clientesMapeados}
-                </ul>
+                {clientes.length === 0 ? (
+                    <div className="empty-state">
+                        <h3>No hay clientes registrados</h3>
+                        <p>Haz clic en "Crear cliente" para agregar el primer cliente</p>
+                    </div>
+                ) : (
+                    <ul>
+                        {clientesMapeados}
+                    </ul>
+                )}
             </div>
 
             <ModalCliente
                 open={mostrarModalCreacion}
                 onClose={handleCerrarModalCrearCliente}
                 onSuccess={hookListarClientes}
-                modo="creacion">
+                modo="creacion"
+                setNotificacion={setNotificacion}>
             </ModalCliente>
 
             <ModalCliente
@@ -110,7 +137,8 @@ const Clientes = () => {
                 onClose={handleCerrarModalEditarCliente}
                 onSuccess={hookListarClientes}
                 modo="edicion"
-                cliente={clienteEditado}>
+                cliente={clienteEditado}
+                setNotificacion={setNotificacion}>
             </ModalCliente>
 
         </div>

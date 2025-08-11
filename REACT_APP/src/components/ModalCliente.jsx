@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import clienteService from "../services/clienteService";
+import './ModalCliente.css';
 
-const ClienteModal = ( {onClose, onSuccess, open, modo, cliente}) => {
+const ClienteModal = ( {onClose, onSuccess, open, modo, cliente, setNotificacion}) => {
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -14,6 +15,21 @@ const ClienteModal = ( {onClose, onSuccess, open, modo, cliente}) => {
         correoElectronico: ''
     });
     const [error, setError] = useState('');
+
+    const handlerLimpiarFichaClose = () => {
+      //Cuando se cancela la edicion deberia de limpiarse la ficha de carga de datos
+      setFormData({
+          nombre: '',
+          apellido: '',
+          dni: '',
+          fechaNacimiento: '',
+          calleDomicilio: '',
+          numeroDomicilio: '',
+          numeroTelefono: '',
+          correoElectronico: ''
+        });
+      onClose();
+    }
 
     //Se cargan datos o no dependiendo del modo
     useEffect(() => {
@@ -41,6 +57,7 @@ const ClienteModal = ( {onClose, onSuccess, open, modo, cliente}) => {
           correoElectronico: ''
         });
       }
+      setError('');
     }, [modo, cliente]);
 
     if (!open) return null;
@@ -50,6 +67,7 @@ const ClienteModal = ( {onClose, onSuccess, open, modo, cliente}) => {
         event.preventDefault();
         setError('');
         try {
+          if (modo === 'creacion'){
             const nuevoCliente = {
                 nombre: formData.nombre.trim(),
                 apellido: formData.apellido.trim(),
@@ -60,20 +78,33 @@ const ClienteModal = ( {onClose, onSuccess, open, modo, cliente}) => {
                 numeroTelefono: formData.numeroTelefono.trim(),
                 correoElectronico: formData.correoElectronico.trim()
             }
-            if (modo === 'edicion') {
-              await clienteService.actualizar(cliente.id, nuevoCliente);
-            }else{
-              await clienteService.crearCliente(nuevoCliente);
+            await clienteService.crear(nuevoCliente);
+            setNotificacion({mensaje: 'Cliente creado exitosamente', tipo:'success'});
+          }
+          else if (modo === 'edicion'){
+            const modifCliente = {
+                id: cliente.id,
+                nombre: formData.nombre.trim(),
+                apellido: formData.apellido.trim(),
+                dni: Number(formData.dni),
+                fechaNacimiento: formData.fechaNacimiento, // YYYY-MM-DD
+                calleDomicilio: formData.calleDomicilio.trim(),
+                numeroDomicilio: formData.numeroDomicilio.trim(),
+                numeroTelefono: formData.numeroTelefono.trim(),
+                correoElectronico: formData.correoElectronico.trim()
             }
+            await clienteService.actualizar(cliente.id, modifCliente);
+            setNotificacion({mensaje: 'Cliente actualizado exitosamente', tipo:'success'});
+          }
 
             if (onSuccess) {
                 await onSuccess();
             }
-
             onClose();
         } catch (error) {
             console.error('Error al guardar el cliente:', error);
             setError('Error al guardar el cliente. Verificar los datos.');
+            setNotificacion({mensaje: 'Error al guardar cliente', tipo:'error'});
         }
     }
 
@@ -90,8 +121,9 @@ const ClienteModal = ( {onClose, onSuccess, open, modo, cliente}) => {
 
     return (
         <div className="modal-overlay" onClick={onClose}>
+
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Nuevo cliente</h3>
+            <h3>{modo==='creacion' ? "Nuevo cliente" : "Editar cliente"}</h3>
     
             <form onSubmit={handleSubmit} className="form-grid">
               <label>
@@ -137,7 +169,7 @@ const ClienteModal = ( {onClose, onSuccess, open, modo, cliente}) => {
               {error && <div className="error">{error}</div>}
     
               <div className="actions">
-                <button type="button" onClick={onClose}>Cancelar</button>
+                <button type="button" onClick={handlerLimpiarFichaClose}>Cancelar</button>
                 <button type="submit">Guardar</button>
               </div>
               

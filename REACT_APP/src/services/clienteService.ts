@@ -15,8 +15,26 @@ export type ClienteCrearTemplate = {
     correoElectronico: string;
 }
 
+export type ClienteDatosTemplate = {
+    id: String,
+    nombre: string;
+    apellido: string;
+    dni: number;
+    fechaNacimiento: string; // YYYY-MM-DD
+    calleDomicilio: string;
+    numeroDomicilio: string;
+    numeroTelefono: string;
+    correoElectronico: string;
+}
+
+
 const getAll = () => {
     const promesa = axios.get(`${BASE_URL}/todos`);
+    return promesa.then(respuesta => respuesta.data);
+}
+
+const getByDni = (dni: BigInteger) => {
+    const promesa = axios.get(`${BASE_URL}/dni/${dni}`);
     return promesa.then(respuesta => respuesta.data);
 }
 
@@ -35,4 +53,4 @@ const eliminar = (id: BigInteger) => {
     return promesa.then(respuesta => respuesta.data);
 }
 
-export default {getAll, crear, actualizar, eliminar}
+export default {getAll, crear, actualizar, eliminar, getByDni}

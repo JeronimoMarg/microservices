@@ -1,34 +1,41 @@
-import {useState, useEffect} from 'react';
+
 import clienteService from "../services/clienteService";
+import './ElementoCliente.css';
 
-const ElementoCliente = ({key, cliente, handlerEditar, onSuccessDelete}) => {
+const ElementoCliente = ({cliente, handlerEditar, onSuccessDelete, setNotificacion}) => {
 
-    //key es el ID del cliente
-
-    //Poner mas datos despues para probar como se ve
-    //Implementar el tema de las obras
-
-    const handleEliminar = (clienteID) => {
+    const handleEliminar = async (clienteID) => {
         console.log('Se presiono el boton para eliminar el cliente con id ', clienteID);
-        clienteService
+        const confirmado = window.confirm("Estas seguro que queres eliminar este cliente?");
+        if(!confirmado) return;
+
+        await clienteService
         .eliminar(clienteID)
         .then(data => {
             //Renderizar todos los clientes
+            setNotificacion({mensaje:"Cliente borrado exitosamente.", tipo:"success"});
             onSuccessDelete();
         })
         .catch(error => {
-            //hacer otra cosa...
-            //setear una notificacion
+            console.log(error)
+            setNotificacion({mensaje: 'Error al eliminar cliente', tipo:'error'});
         })
     }
 
     return(
-        <li key={key}>
+        <li className="cliente-card">
             <h2>{cliente.nombre + " " + cliente.apellido}</h2>
-            <h3>{cliente.dni}</h3>
-            <button onClick={handlerEditar}>Editar datos</button>
-            <button onClick={ () => handleEliminar(key)}>Eliminar</button>
-            <button>Ver obras</button>
+            <h3>{"DNI: " + cliente.dni}</h3>
+            <h3>{"Fecha Nacimiento: " + cliente.fechaNacimiento}</h3>
+            <h3>{"Calle: " + cliente.calleDomicilio}</h3>
+            <h3>{"Numero domicilio: " + cliente.numeroDomicilio}</h3>
+            <h3>{"Numero de telefono: " + cliente.numeroTelefono}</h3>
+            <h3>{"Correo electronico: " + cliente.correoElectronico}</h3>
+            <div className="cliente-actions">
+                <button onClick={ () => handlerEditar(cliente) }>Editar datos</button>
+                <button onClick={ () => handleEliminar(cliente.id) }>Eliminar</button>
+                <button>Ver obras</button>
+            </div>
         </li>
     )
 

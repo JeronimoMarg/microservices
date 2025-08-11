@@ -1,0 +1,140 @@
+/* ElementoCliente Component Styles */
+.cliente-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border-left: 4px solid #007bff;
+}
+
+.cliente-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.cliente-card h2 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.cliente-card h3 {
+  margin: 0 0 20px 0;
+  color: #6c757d;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.cliente-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cliente-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Edit Button */
+.cliente-actions button:first-child {
+  background: linear-gradient(135deg, #17a2b8, #20c997);
+  color: white;
+}
+
+.cliente-actions button:first-child:hover {
+  background: linear-gradient(135deg, #138496, #1ea085);
+  transform: translateY(-1px);
+}
+
+/* Delete Button */
+.cliente-actions button:nth-child(2) {
+  background: linear-gradient(135deg, #dc3545, #e74c3c);
+  color: white;
+}
+
+.cliente-actions button:nth-child(2):hover {
+  background: linear-gradient(135deg, #c82333, #c0392b);
+  transform: translateY(-1px);
+}
+
+/* View Works Button */
+.cliente-actions button:last-child {
+  background: linear-gradient(135deg, #6f42c1, #8e44ad);
+  color: white;
+}
+
+.cliente-actions button:last-child:hover {
+  background: linear-gradient(135deg, #5a32a3, #7d3c98);
+  transform: translateY(-1px);
+}
+
+.cliente-actions button:active {
+  transform: translateY(0);
+}
+
+/* Loading state */
+.cliente-card.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.cliente-card.loading .cliente-actions button {
+  opacity: 0.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cliente-card {
+    padding: 15px;
+  }
+  
+  .cliente-card h2 {
+    font-size: 18px;
+  }
+  
+  .cliente-card h3 {
+    font-size: 14px;
+  }
+  
+  .cliente-actions {
+    flex-direction: column;
+  }
+  
+  .cliente-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .cliente-card {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .cliente-card h2 {
+    font-size: 16px;
+  }
+  
+  .cliente-card h3 {
+    font-size: 13px;
+    margin-bottom: 15px;
+  }
+  
+  .cliente-actions button {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
