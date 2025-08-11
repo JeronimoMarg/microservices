@@ -1,3 +1,4 @@
+import './Notificacion.css';
 
 const Notificacion = ({mensaje, tipo}) => {
 
@@ -6,9 +7,11 @@ const Notificacion = ({mensaje, tipo}) => {
     }
 
     return (
-        <p className={tipo}>
-            {mensaje}
-        </p>
+        <div className="notificacion-container">
+            <p className={tipo}>
+                {mensaje}
+            </p>
+        </div>
     )
 }
 
